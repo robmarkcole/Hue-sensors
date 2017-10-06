@@ -1,12 +1,43 @@
 """
 Standalone code for parsing API data.
 """
+import json
 import logging
-
+import pprint
+import requests
 
 _LOGGER = logging.getLogger(__name__)
 TAP_BUTTON_NAMES = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
 
+
+def print_json(json_data):
+    """Convenience for printing json."""
+    pprint.PrettyPrinter().pprint(json_data)
+    return True
+
+
+def load_url(filename):
+    """Convenience for loading a url from a json file."""
+    try:
+        with open(filename, 'r') as fp:
+            url = json.load(fp)
+    except Exception as e:
+        print('Failed to load url')
+        url = None
+    return url['url']
+
+
+def get_response_from_url(url):
+    """Returns the Hue API response to a URL as json."""
+    response = requests.get(url).json()
+    return response
+
+
+def save_response(response):
+    """Convenience to save the json response to file."""
+    with open('response.json', 'w') as outfile:
+        json.dump(response, outfile)
+    return True
 
 def parse_hue_api_response(response):
     """Take in the Hue API json response."""
