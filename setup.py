@@ -1,20 +1,6 @@
-"""Setup hue_sensors.py module.
-See:
-https://github.com/pypa/sampleproject/blob/master/setup.py
-"""
-
 from setuptools import setup
-from codecs import open
-import os
 
-__version__ = '0.8'
-
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-requirements = read('requirements.txt').split()
+__version__ = '0.9'
 
 setup(
     name='hue_sensors',
@@ -25,8 +11,9 @@ setup(
     author='Robin Cole',
     author_email='robmarkcole@gmail.com',
     description='Tools for reading the state of Philips Hue sensors',
-    long_description=read('README.md'),
-    install_requires=requirements,
+    install_requires=['logging',
+                      'pprint',
+                      'requests'],
     license='MIT',
     classifiers=[
         "Development Status :: 4 - Beta",
