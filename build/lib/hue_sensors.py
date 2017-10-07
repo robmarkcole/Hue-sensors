@@ -1,11 +1,44 @@
 """
 Standalone code for parsing API data.
 """
+import json
 import logging
-
+import pprint
+import requests
 
 _LOGGER = logging.getLogger(__name__)
-TAP_BUTTON_NAMES = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
+__version__ = '0.6'
+__author__ = 'Robin Cole'
+
+
+def print_json(json_data):
+    """Convenience for printing json."""
+    pprint.PrettyPrinter().pprint(json_data)
+    return True
+
+
+def load_url(filename):
+    """Convenience for loading a url from a json file."""
+    try:
+        with open(filename, 'r') as fp:
+            url = json.load(fp)
+    except Exception as e:
+        print('Failed to load url')
+        url = None
+    return url['url']
+
+
+def get_response_from_url(url):
+    """Returns the Hue API response to a URL as json."""
+    response = requests.get(url).json()
+    return response
+
+
+def save_response(response):
+    """Convenience to save the json response to file."""
+    with open('response.json', 'w') as outfile:
+        json.dump(response, outfile)
+    return True
 
 
 def parse_hue_api_response(response):
@@ -15,11 +48,11 @@ def parse_hue_api_response(response):
     # Loop over all keys (1,2 etc) to identify sensors and get data.
     for key in response.keys():
         sensor = response[key]
+        modelid = sensor['modelid'][0:3]
+        if modelid in ['RWL', 'SML', 'ZGP']:
+            _key = modelid + '_' + sensor['uniqueid'].split(':')[-1][0:5]
 
-        if sensor['modelid'] in ['RWL021', 'SML001', 'ZGPSWITCH']:
-            _key = sensor['uniqueid'].split(':')[-1][0:5]
-
-            if sensor['modelid'] == 'RWL021':
+            if sensor['modelid'][0:3] == 'RWL':
                 data_dict[_key] = parse_rwl(sensor)
             elif sensor['modelid'] == 'ZGPSWITCH':
                 data_dict[_key] = parse_zpg(sensor)
@@ -35,9 +68,16 @@ def parse_hue_api_response(response):
 
 
 def parse_sml(response):
-    """Parse the json for a SML001 Hue motion sensor and return the data."""
+    """Parse the json for a SML Hue motion sensor and return the data."""
     if 'ambient light' in response['name']:
-        data = {'light_level': response['state']['lightlevel']}
+        lightlevel = response['state']['lightlevel']
+        lux = round(float(10**((lightlevel-1)/10000)), 2)
+        dark = response['state']['dark']
+        daylight = response['state']['daylight']
+        data = {'light_level': lightlevel,
+                'lux': lux,
+                'dark': dark,
+                'daylight': daylight, }
 
     elif 'temperature' in response['name']:
         data = {'temperature': response['state']['temperature']/100.0}
@@ -53,27 +93,29 @@ def parse_sml(response):
         else:
             state = 'off'
 
-        data = {'model': response['modelid'],
+        data = {'model': 'SML',
                 'state': state,
+                'battery': response['config']['battery'],
                 'name': name}
     return data
 
 
 def parse_zpg(response):
     """Parse the json response for a ZGPSWITCH Hue Tap."""
+    TAP_BUTTONS = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
     press = response['state']['buttonevent']
+    button = TAP_BUTTONS[press]
 
-    button = TAP_BUTTON_NAMES[press]
-
-    data = {'model': 'ZGPSWITCH',
+    data = {'model': 'ZPG',
             'name': response['name'],
             'state': button,
+            'battery': response['config']['battery'],
             'last_updated': response['state']['lastupdated'].split('T')}
     return data
 
 
 def parse_rwl(response):
-    """Parse the json response for a RWL021 Hue remote."""
+    """Parse the json response for a RWL Hue remote."""
     press = str(response['state']['buttonevent'])
 
     if press[-1] in ['0', '2']:
@@ -81,9 +123,10 @@ def parse_rwl(response):
     else:
         button = str(press)[0] + '_hold'
 
-    data = {'model': 'RWL021',
+    data = {'model': 'RWL',
             'name': response['name'],
             'state': button,
+            'battery': response['config']['battery'],
             'last_updated': response['state']['lastupdated'].split('T')}
     return data
 
@@ -96,6 +139,6 @@ def parse_geofence(response):
     else:
         state = 'off'
     data = {'name': response['name'],
-            'model': 'Geofence',
+            'model': 'GEO',
             'state': state}
     return data
