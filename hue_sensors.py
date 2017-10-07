@@ -91,7 +91,7 @@ def parse_sml(response):
         else:
             state = 'off'
 
-        data = {'model': 'Motion',
+        data = {'model': 'SML',
                 'state': state,
                 'battery': response['config']['battery'],
                 'name': name}
@@ -104,7 +104,7 @@ def parse_zpg(response):
     press = response['state']['buttonevent']
     button = TAP_BUTTONS[press]
 
-    data = {'model': 'Tap',
+    data = {'model': 'ZPG',
             'name': response['name'],
             'state': button,
             'battery': response['config']['battery'],
@@ -121,7 +121,7 @@ def parse_rwl(response):
     else:
         button = str(press)[0] + '_hold'
 
-    data = {'model': 'Remote',
+    data = {'model': 'RWL',
             'name': response['name'],
             'state': button,
             'battery': response['config']['battery'],
@@ -137,6 +137,6 @@ def parse_geofence(response):
     else:
         state = 'off'
     data = {'name': response['name'],
-            'model': 'Geofence',
+            'model': 'GEO',
             'state': state}
     return data
