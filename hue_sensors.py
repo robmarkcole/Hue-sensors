@@ -7,6 +7,8 @@ import pprint
 import requests
 
 _LOGGER = logging.getLogger(__name__)
+__version__ = '0.6'
+__author__ = 'Robin Cole'
 
 
 def print_json(json_data):
