@@ -7,7 +7,6 @@ import pprint
 import requests
 
 _LOGGER = logging.getLogger(__name__)
-TAP_BUTTON_NAMES = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
 
 
 def print_json(json_data):
@@ -47,10 +46,10 @@ def parse_hue_api_response(response):
     for key in response.keys():
         sensor = response[key]
 
-        if sensor['modelid'] in ['RWL021', 'SML001', 'ZGPSWITCH']:
+        if sensor['modelid'][0:3] in ['RWL', 'SML', 'ZGP']:
             _key = sensor['uniqueid'].split(':')[-1][0:5]
 
-            if sensor['modelid'] == 'RWL021':
+            if sensor['modelid'][0:3] == 'RWL':
                 data_dict[_key] = parse_rwl(sensor)
             elif sensor['modelid'] == 'ZGPSWITCH':
                 data_dict[_key] = parse_zpg(sensor)
@@ -66,9 +65,16 @@ def parse_hue_api_response(response):
 
 
 def parse_sml(response):
-    """Parse the json for a SML001 Hue motion sensor and return the data."""
+    """Parse the json for a SML Hue motion sensor and return the data."""
     if 'ambient light' in response['name']:
-        data = {'light_level': response['state']['lightlevel']}
+        lightlevel = response['state']['lightlevel']
+        lux = round(float(10**((lightlevel-1)/10000)), 2)
+        dark = response['state']['dark']
+        daylight = response['state']['daylight']
+        data = {'light_level': lightlevel,
+                'lux': lux,
+                'dark': dark,
+                'daylight': daylight, }
 
     elif 'temperature' in response['name']:
         data = {'temperature': response['state']['temperature']/100.0}
@@ -84,27 +90,29 @@ def parse_sml(response):
         else:
             state = 'off'
 
-        data = {'model': response['modelid'],
+        data = {'model': 'Motion',
                 'state': state,
+                'battery': response['config']['battery'],
                 'name': name}
     return data
 
 
 def parse_zpg(response):
     """Parse the json response for a ZGPSWITCH Hue Tap."""
+    TAP_BUTTONS = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
     press = response['state']['buttonevent']
+    button = TAP_BUTTONS[press]
 
-    button = TAP_BUTTON_NAMES[press]
-
-    data = {'model': 'ZGPSWITCH',
+    data = {'model': 'Tap',
             'name': response['name'],
             'state': button,
+            'battery': response['config']['battery'],
             'last_updated': response['state']['lastupdated'].split('T')}
     return data
 
 
 def parse_rwl(response):
-    """Parse the json response for a RWL021 Hue remote."""
+    """Parse the json response for a RWL Hue remote."""
     press = str(response['state']['buttonevent'])
 
     if press[-1] in ['0', '2']:
@@ -112,9 +120,10 @@ def parse_rwl(response):
     else:
         button = str(press)[0] + '_hold'
 
-    data = {'model': 'RWL021',
+    data = {'model': 'Remote',
             'name': response['name'],
             'state': button,
+            'battery': response['config']['battery'],
             'last_updated': response['state']['lastupdated'].split('T')}
     return data
 
