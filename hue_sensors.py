@@ -38,6 +38,7 @@ def save_response(response):
         json.dump(response, outfile)
     return True
 
+
 def parse_hue_api_response(response):
     """Take in the Hue API json response."""
     data_dict = {}    # The list of sensors, referenced by their hue_id.
@@ -45,9 +46,9 @@ def parse_hue_api_response(response):
     # Loop over all keys (1,2 etc) to identify sensors and get data.
     for key in response.keys():
         sensor = response[key]
-
-        if sensor['modelid'][0:3] in ['RWL', 'SML', 'ZGP']:
-            _key = sensor['uniqueid'].split(':')[-1][0:5]
+        modelid = sensor['modelid'][0:3]
+        if modelid in ['RWL', 'SML', 'ZGP']:
+            _key = modelid + '_' + sensor['uniqueid'].split(':')[-1][0:5]
 
             if sensor['modelid'][0:3] == 'RWL':
                 data_dict[_key] = parse_rwl(sensor)
