@@ -2,17 +2,7 @@
 Standalone code for parsing API data.
 """
 import json
-import logging
-import pprint
 import requests
-
-_LOGGER = logging.getLogger(__name__)
-
-
-def print_json(json_data):
-    """Convenience for printing json."""
-    pprint.PrettyPrinter().pprint(json_data)
-    return True
 
 
 def load_url(filename):

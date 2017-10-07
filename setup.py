@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = '0.9'
+__version__ = '0.91'
 
 setup(
     name='hue_sensors',
@@ -11,9 +11,7 @@ setup(
     author='Robin Cole',
     author_email='robmarkcole@gmail.com',
     description='Tools for reading the state of Philips Hue sensors',
-    install_requires=['logging',
-                      'pprint',
-                      'requests'],
+    install_requires=['requests'],
     license='MIT',
     classifiers=[
         "Development Status :: 4 - Beta",
