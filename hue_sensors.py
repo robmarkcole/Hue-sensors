@@ -7,7 +7,7 @@ import pprint
 import requests
 
 _LOGGER = logging.getLogger(__name__)
-__version__ = '0.6'
+__version__ = '0.7'
 __author__ = 'Robin Cole'
 
 
@@ -52,11 +52,11 @@ def parse_hue_api_response(response):
         if modelid in ['RWL', 'SML', 'ZGP']:
             _key = modelid + '_' + sensor['uniqueid'].split(':')[-1][0:5]
 
-            if sensor['modelid'][0:3] == 'RWL':
+            if modelid == 'RWL':
                 data_dict[_key] = parse_rwl(sensor)
-            elif sensor['modelid'] == 'ZGPSWITCH':
+            elif modelid == 'ZGP':
                 data_dict[_key] = parse_zpg(sensor)
-            else:
+            elif modelid == 'SML':
                 if _key not in data_dict.keys():
                     data_dict[_key] = parse_sml(sensor)
                 else:
