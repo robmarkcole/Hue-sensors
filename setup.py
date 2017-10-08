@@ -1,13 +1,11 @@
 from setuptools import setup
 
-__version__ = '0.91'
-
 setup(
-    name='hue_sensors',
-    version=__version__,
+    name='hue-sensors',
+    version='1.0',
     py_modules=['hue_sensors'],
     url='https://github.com/robmarkcole/Hue-sensors',
-    keywords='hue',
+    keywords='phillips hue',
     author='Robin Cole',
     author_email='robmarkcole@gmail.com',
     description='Tools for reading the state of Philips Hue sensors',

@@ -1,8 +1,11 @@
 """
-Standalone code for parsing API data.
+Standalone code for parsing Hue API data.
+Robin Cole. 8-10-2017
 """
 import json
 import requests
+
+__version__ = 1.0
 
 
 def load_url(filename):
