@@ -5,7 +5,7 @@ Robin Cole. 8-10-2017
 import json
 import requests
 
-__version__ = 1.0
+__version__ = 1.1
 
 
 def load_url(filename):
@@ -85,9 +85,10 @@ def parse_sml(response):
             state = 'off'
 
         data = {'model': 'SML',
+                'name': name,
                 'state': state,
                 'battery': response['config']['battery'],
-                'name': name}
+                'last_updated': response['state']['lastupdated'].split('T')}
     return data
 
 
@@ -100,7 +101,6 @@ def parse_zpg(response):
     data = {'model': 'ZPG',
             'name': response['name'],
             'state': button,
-            'battery': response['config']['battery'],
             'last_updated': response['state']['lastupdated'].split('T')}
     return data
 
