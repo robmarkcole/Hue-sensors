@@ -46,7 +46,7 @@ def parse_hue_api_response(response):
             if modelid == 'RWL':
                 data_dict[_key] = parse_rwl(sensor)
             elif modelid == 'ZGP':
-                data_dict[_key] = parse_zpg(sensor)
+                data_dict[_key] = parse_zgp(sensor)
             elif modelid == 'SML':
                 if _key not in data_dict.keys():
                     data_dict[_key] = parse_sml(sensor)
@@ -92,13 +92,13 @@ def parse_sml(response):
     return data
 
 
-def parse_zpg(response):
+def parse_zgp(response):
     """Parse the json response for a ZGPSWITCH Hue Tap."""
     TAP_BUTTONS = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
     press = response['state']['buttonevent']
     button = TAP_BUTTONS[press]
 
-    data = {'model': 'ZPG',
+    data = {'model': 'ZGP',
             'name': response['name'],
             'state': button,
             'last_updated': response['state']['lastupdated'].split('T')}
