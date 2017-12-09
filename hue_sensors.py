@@ -5,7 +5,7 @@ Robin Cole. 8-10-2017
 import json
 import requests
 
-__version__ = 1.1
+__version__ = 1.2
 
 
 def load_url(filename):
@@ -17,6 +17,17 @@ def load_url(filename):
         print('Failed to load url')
         url = None
     return url['url']
+
+
+def load_json_file(filename):
+    """Convenience for loading a response data from a json file."""
+    try:
+        with open(filename, 'r') as fp:
+            response = json.load(fp)
+    except Exception as e:
+        print('Failed to load json file')
+        response = None
+    return response
 
 
 def get_response_from_url(url):
@@ -60,20 +71,26 @@ def parse_hue_api_response(response):
 
 def parse_sml(response):
     """Parse the json for a SML Hue motion sensor and return the data."""
-    if 'ambient light' in response['name']:
+    if response['type'] == "ZLLLightLevel":
         lightlevel = response['state']['lightlevel']
-        lux = round(float(10**((lightlevel-1)/10000)), 2)
-        dark = response['state']['dark']
-        daylight = response['state']['daylight']
-        data = {'light_level': lightlevel,
-                'lux': lux,
-                'dark': dark,
-                'daylight': daylight, }
+        if lightlevel is not None:
+            lux = round(float(10**((lightlevel-1)/10000)), 2)
+            dark = response['state']['dark']
+            daylight = response['state']['daylight']
+            data = {'light_level': lightlevel,
+                    'lux': lux,
+                    'dark': dark,
+                    'daylight': daylight, }
+        else:
+            data = {'light_level': 'No light level data'}
 
-    elif 'temperature' in response['name']:
-        data = {'temperature': response['state']['temperature']/100.0}
+    elif response['type'] == "ZLLTemperature":
+        if response['state']['temperature'] is not None:
+            data = {'temperature': response['state']['temperature']/100.0}
+        else:
+            data = {'temperature': 'No temperature data'}
 
-    else:
+    elif response['type'] == "ZLLPresence":
         name_raw = response['name']
         arr = name_raw.split()
         arr.insert(-1, 'motion')
@@ -96,7 +113,10 @@ def parse_zgp(response):
     """Parse the json response for a ZGPSWITCH Hue Tap."""
     TAP_BUTTONS = {34: '1_click', 16: '2_click', 17: '3_click', 18: '4_click'}
     press = response['state']['buttonevent']
-    button = TAP_BUTTONS[press]
+    if press is None:
+        button = 'No data'
+    else:
+        button = TAP_BUTTONS[press]
 
     data = {'model': 'ZGP',
             'name': response['name'],
