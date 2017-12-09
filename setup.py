@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='hue-sensors',
-    version='1.1',
+    version='1.2',
     py_modules=['hue_sensors'],
     url='https://github.com/robmarkcole/Hue-sensors',
     keywords='phillips hue',
